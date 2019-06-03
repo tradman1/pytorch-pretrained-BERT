@@ -843,7 +843,7 @@ def main():
             with tqdm(train_dataloader, total=len(train_dataloader)) as pbar:
 
                 for step, batch in enumerate(pbar):
-                    if (step+1) % 1000 == 0:
+                    if (step+1) % 3000 == 0:
                         tqdm.write("Saving model...")
                         save_model(model, tokenizer, args.output_dir)
 
