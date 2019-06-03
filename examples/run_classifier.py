@@ -1012,17 +1012,29 @@ def main():
                             writer.write("%s = %s\n" % (key, str(result[key])))
 
             # ===================== MODEL SAVING =============================================================
-            # Save a trained model, configuration and tokenizer
-            model_to_save = model.module if hasattr(model, 'module') else model  # Only save the model it-self
+            # # Save a trained model, configuration and tokenizer
+            # model_to_save = model.module if hasattr(model, 'module') else model  # Only save the model it-self
 
-            # If we save using the predefined names, we can load using `from_pretrained`
-            output_model_file = os.path.join(args.output_dir, WEIGHTS_NAME)
-            output_config_file = os.path.join(args.output_dir, CONFIG_NAME)
+            # # If we save using the predefined names, we can load using `from_pretrained`
+            # output_model_file = os.path.join(args.output_dir, WEIGHTS_NAME)
+            # output_config_file = os.path.join(args.output_dir, CONFIG_NAME)
 
-            torch.save(model_to_save.state_dict(), output_model_file)
-            model_to_save.config.to_json_file(output_config_file)
-            tokenizer.save_vocabulary(args.output_dir)
+            # torch.save(model_to_save.state_dict(), output_model_file)
+            # model_to_save.config.to_json_file(output_config_file)
+            # tokenizer.save_vocabulary(args.output_dir)
+            save_model(model, tokenizer, args.output_dir)
 
+def save_model(model, tokenizer, output_dir):
+    # Save a trained model, configuration and tokenizer
+    model_to_save = model.module if hasattr(model, 'module') else model  # Only save the model it-self
+
+    # If we save using the predefined names, we can load using `from_pretrained`
+    output_model_file = os.path.join(output_dir, WEIGHTS_NAME)
+    output_config_file = os.path.join(output_dir, CONFIG_NAME)
+
+    torch.save(model_to_save.state_dict(), output_model_file)
+    model_to_save.config.to_json_file(output_config_file)
+    tokenizer.save_vocabulary(output_dir)    
 
 class AverageMeter:
     """
