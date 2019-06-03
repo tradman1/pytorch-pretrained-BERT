@@ -831,6 +831,10 @@ def main():
             with tqdm(train_dataloader, total=len(train_dataloader)) as pbar:
 
                 for step, batch in enumerate(pbar):
+                    if (step+1) % 3000 == 0:
+                        tqdm.write("Saving model...")
+                        save_model(model, tokenizer, args.output_dir)
+
                     batch = tuple(t.to(device) for t in batch)
                     input_ids, input_mask, segment_ids, label_ids = batch
 
