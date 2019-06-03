@@ -31,7 +31,7 @@ from torch.utils.data import (DataLoader, RandomSampler, SequentialSampler,
 from torch.utils.data.distributed import DistributedSampler
 from tqdm import tqdm
 
-from torch.nn import CrossEntropyLoss, MSELoss
+from torch.nn import CrossEntropyLoss, MSELoss, Linear
 from scipy.stats import pearsonr, spearmanr
 from sklearn.metrics import matthews_corrcoef, f1_score
 
@@ -584,6 +584,10 @@ def main():
                         type=str,
                         required=True,
                         help="The output directory where the model predictions and checkpoints will be written.")
+    parser.add_argument("--intermediate_task",
+                        default=None,
+                        type=str,
+                        help="Name of the intermediate task the model has been trained on.")
 
     ## Other parameters
     parser.add_argument("--cache_dir",
@@ -732,6 +736,9 @@ def main():
 
     label_list = processor.get_labels()
     num_labels = len(label_list)
+    if args.intermediate_task:
+        inter_processor = processors[args.intermediate_task.lower()]()
+        inter_num_labels = len(inter_processor.get_labels())
 
     tokenizer = BertTokenizer.from_pretrained(args.bert_model, do_lower_case=args.do_lower_case)
 
@@ -748,7 +755,12 @@ def main():
     cache_dir = args.cache_dir if args.cache_dir else os.path.join(str(PYTORCH_PRETRAINED_BERT_CACHE), 'distributed_{}'.format(args.local_rank))
     model = BertForSequenceClassification.from_pretrained(args.bert_model,
               cache_dir=cache_dir,
-              num_labels=num_labels)
+              num_labels=inter_num_labels if args.intermediate_task else num_labels)
+    if args.intermediate_task:
+        in_features = model.classifier.in_features
+        model.classifier = Linear(in_features, num_labels)
+        model.init_bert_weights(model.classifier)
+
     if args.fp16:
         model.half()
     model.to(device)
